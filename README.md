@@ -612,7 +612,7 @@ done
 
 
 
-Splitting reads and trimming adapters using porechop
+Renaming runs
 
 ```bash
 	for RawReads in $(ls ../../../../../data/scratch/armita/didymella/qc_rna/paired/*/*/*/unpaired/*_trim.fq.gz | grep 'PDB'); do
@@ -816,61 +816,61 @@ In preperation for submission to ncbi, gene models were renamed and duplicate ge
  ```
 
 
- In preperation for submission to ncbi, gene models were renamed and duplicate gene features were identified and removed.
-  * no duplicate genes were identified
+In preperation for submission to ncbi, gene models were renamed and duplicate gene features were identified and removed.
+* no duplicate genes were identified
 
 
- ```bash
- for GffAppended in $(ls gene_pred/final/*/*/final/final_genes_appended.gff3 | grep '61B'); do
- Strain=$(echo $GffAppended | rev | cut -d '/' -f3 | rev)
- Organism=$(echo $GffAppended | rev | cut -d '/' -f4 | rev)
- echo "$Organism - $Strain"
- FinalDir=gene_pred/final_genes/$Organism/$Strain/final
- mkdir -p $FinalDir
- ProgDir=/home/armita/git_repos/emr_repos/tools/gene_prediction/codingquary
- # $ProgDir/remove_dup_features.py --inp_gff $GffAppended
- # $ProgDir/remove_dup_features.py --inp_gff $GffAppended | grep -A2 'Duplicate gene found' | tail -n1 | cut -f2 -d'=' > $FinalDir/filter_list.tmp
- GffFiltered=$FinalDir/filtered_duplicates.gff
- # cat $GffAppended | grep -v -w -f $FinalDir/filter_list.tmp > $GffFiltered
- # rm $FinalDir/filter_list.tmp
- $ProgDir/remove_dup_features.py --inp_gff $GffAppended --out_gff $GffFiltered
- GffRenamed=$FinalDir/final_genes_appended_renamed.gff3
- LogFile=$FinalDir/final_genes_appended_renamed.log
- ProgDir=/home/armita/git_repos/emr_repos/tools/gene_prediction/codingquary
- $ProgDir/gff_rename_genes.py --inp_gff $GffFiltered --conversion_log $LogFile > $GffRenamed
- rm $GffFiltered
+```bash
+for GffAppended in $(ls gene_pred/final/*/*/final/final_genes_appended.gff3 | grep '61B'); do
+Strain=$(echo $GffAppended | rev | cut -d '/' -f3 | rev)
+Organism=$(echo $GffAppended | rev | cut -d '/' -f4 | rev)
+echo "$Organism - $Strain"
+FinalDir=gene_pred/final_genes/$Organism/$Strain/final
+mkdir -p $FinalDir
+ProgDir=/home/armita/git_repos/emr_repos/tools/gene_prediction/codingquary
+# $ProgDir/remove_dup_features.py --inp_gff $GffAppended
+# $ProgDir/remove_dup_features.py --inp_gff $GffAppended | grep -A2 'Duplicate gene found' | tail -n1 | cut -f2 -d'=' > $FinalDir/filter_list.tmp
+GffFiltered=$FinalDir/filtered_duplicates.gff
+# cat $GffAppended | grep -v -w -f $FinalDir/filter_list.tmp > $GffFiltered
+# rm $FinalDir/filter_list.tmp
+$ProgDir/remove_dup_features.py --inp_gff $GffAppended --out_gff $GffFiltered
+GffRenamed=$FinalDir/final_genes_appended_renamed.gff3
+LogFile=$FinalDir/final_genes_appended_renamed.log
+ProgDir=/home/armita/git_repos/emr_repos/tools/gene_prediction/codingquary
+$ProgDir/gff_rename_genes.py --inp_gff $GffFiltered --conversion_log $LogFile > $GffRenamed
+rm $GffFiltered
 
- Assembly=$(ls repeat_masked/$Organism/$Strain/filtered_contigs/*_softmasked_repeatmasker_TPSI_appended.fa)
- $ProgDir/gff2fasta.pl $Assembly $GffRenamed $FinalDir/final_genes_appended_renamed
+Assembly=$(ls repeat_masked/$Organism/$Strain/filtered_contigs/*_softmasked_repeatmasker_TPSI_appended.fa)
+$ProgDir/gff2fasta.pl $Assembly $GffRenamed $FinalDir/final_genes_appended_renamed
 
- # The proteins fasta file contains * instead of Xs for stop codons, these should
- # be changed
- sed -i 's/\*/X/g' $FinalDir/final_genes_appended_renamed.pep.fasta
- done
- ```
+# The proteins fasta file contains * instead of Xs for stop codons, these should
+# be changed
+sed -i 's/\*/X/g' $FinalDir/final_genes_appended_renamed.pep.fasta
+done
+```
 
 
 ## Assessing the Gene space in predicted transcriptomes:
 
- ```bash
- for Assembly in $(ls gene_pred/final_genes/*/*/final/final_genes_appended_renamed.gene.fasta | grep '61B'); do
- Strain=$(echo $Assembly| rev | cut -d '/' -f3 | rev)
- Organism=$(echo $Assembly | rev | cut -d '/' -f4 | rev)
- echo "$Organism - $Strain"
- ProgDir=/home/armita/git_repos/emr_repos/tools/gene_prediction/busco
- # BuscoDB="Fungal"
- BuscoDB=$(ls -d /home/groups/harrisonlab/dbBusco/ascomycota_odb9)
- OutDir=gene_pred/busco/$Organism/$Strain/genes
- qsub $ProgDir/sub_busco3.sh $Assembly $BuscoDB $OutDir
- done
- ```
+```bash
+for Assembly in $(ls gene_pred/final_genes/*/*/final/final_genes_appended_renamed.gene.fasta | grep '61B'); do
+Strain=$(echo $Assembly| rev | cut -d '/' -f3 | rev)
+Organism=$(echo $Assembly | rev | cut -d '/' -f4 | rev)
+echo "$Organism - $Strain"
+ProgDir=/home/armita/git_repos/emr_repos/tools/gene_prediction/busco
+# BuscoDB="Fungal"
+BuscoDB=$(ls -d /home/groups/harrisonlab/dbBusco/ascomycota_odb9)
+OutDir=gene_pred/busco/$Organism/$Strain/genes
+qsub $ProgDir/sub_busco3.sh $Assembly $BuscoDB $OutDir
+done
+```
 
- ```bash
- 	for File in $(ls gene_pred/busco/*/*/genes/*/short_summary_*.txt); do  
- 		echo $File;
- 		cat $File | grep -e '(C)' -e 'Total';
- 	done
- ```
+```bash
+for File in $(ls gene_pred/busco/*/*/genes/*/short_summary_*.txt); do  
+echo $File;
+cat $File | grep -e '(C)' -e 'Total';
+done
+```
 
 
 #Functional annotation

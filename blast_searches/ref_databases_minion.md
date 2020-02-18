@@ -36,7 +36,7 @@ Build a reference genome database:
 Blast vs the reference genome databases:
 
 ```bash
-for RefGenome in $(ls assembly/external/*/*/*/*_AssemblyScaffolds.fasta); do
+for RefGenome in $(ls assembly/external/*/*/*/*_AssemblyScaffolds.fasta | grep 'IPT5'); do
 Organism=$(echo $RefGenome | rev | cut -f4 -d '/' | rev)
 Strain=$(echo $RefGenome | rev | cut -f3 -d '/' | rev)
 Prefix="${Organism}_${Strain}"
